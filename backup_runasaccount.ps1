@@ -34,21 +34,15 @@ try {
         -TenantId $TenantID `
         -ApplicationId $ApplicationId `
         -CertificateThumbprint $CertificateThumbprint 
-    
-
-    
-    #Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -verbose 
+   
      $storageAcct = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction Stop
      $storagecontext = ($storageAcct).Context
      $share = Get-AzureStorageShare -Context $storagecontext -Name $filesharename -ErrorAction Stop
      $snapshot = $share.Snapshot()
-     #$snapshotname = $snapshot.name + $timestamp
-     #Get-AzureStorageFile -Share $snapshot.Name
+
      $listofsnapshots = Get-AzureStorageShare -Context $storageContext | Where-Object { $_.Name -eq $filesharename -and $_.IsSnapshot -eq $true }
      $listofsnapshots | Select-Object Name, SnapShotTime,IsSnapshot
-     ###################count the snapshots age > 7 days #################  should be -lt operator
      $oldsnapshots = @($listofsnapshots | Where-Object { $_.SnapshotTime -lt $lastdate})
-     
      if (!$oldsnapshots)
      {
          "No snapshot found older than 7 days"
@@ -60,11 +54,10 @@ try {
           {
                   $oldsnapshot | Select-Object Name, SnapShotTime,IsSnapshot
                   Remove-AzureStorageShare -Share $oldsnapshot -verbose
-                        } #for each
+                        } 
            
-     }#else
-} #try
-
+     }
+} 
 catch {
     $ErrorMessage = $_.Exception.Message
     "[$timestamp] [Error] at line $($_.InvocationInfo.ScriptLineNumber): $ErrorMessage" 
