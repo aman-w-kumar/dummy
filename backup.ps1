@@ -21,10 +21,10 @@ begin {
         $lastdate = $date.addhours(-7)
 try {
      "Logging in to Azure..."
-     $credentials = Get-AutomationVariable -Name 'AzureCredential'
-     
+     $tenantID = Get-AutomationVariable -Name 'subID'
+     $subscriptionID = Get-AutomationVariable -Name 'tenantID' 
+     $credentials = Get-AutomationPSCredential -Name 'AzureCredential'
      add-AzureRmAccount -Credential $credentials
-    
      $storageAcct = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction Stop
      $storagecontext = ($storageAcct).Context
      $share = Get-AzureStorageShare -Context $storagecontext -Name $filesharename -ErrorAction Stop
