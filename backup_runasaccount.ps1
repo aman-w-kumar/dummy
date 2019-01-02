@@ -58,7 +58,7 @@ try {
           "removing old snapshots"
                     foreach($oldsnapshot in $oldsnapshots)
           {
-                  $oldsnapshot | | Select-Object Name, SnapShotTime,IsSnapshot
+                  $oldsnapshot | Select-Object Name, SnapShotTime,IsSnapshot
                   Remove-AzureStorageShare -Share $oldsnapshot -verbose
                         } #for each
            
