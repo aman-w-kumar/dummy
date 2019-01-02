@@ -1,1 +1,1 @@
-# Do not use this file
+# Please do not use this script directly in production environment
