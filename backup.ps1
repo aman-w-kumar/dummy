@@ -35,7 +35,7 @@ try {
      {
           foreach($oldsnapshot in $oldsnapshots)
           {
-           Remove-AzureStorageShare -Share $oldsnapshot -verbose -WhatIf
+           Remove-AzureStorageShare -Share $oldsnapshot -verbose 
                         } 
             }
 } 
