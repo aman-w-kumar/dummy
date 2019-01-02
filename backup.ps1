@@ -19,8 +19,6 @@ begin {
         $ErrorActionPreference = 'Stop'
         $date = get-date
         $lastdate = $date.addhours(-7)
-     
-
 try {
      "Logging in to Azure..."
      $credentials = Get-AutomationPSCredential -Name 'AzureCredential'
