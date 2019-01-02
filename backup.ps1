@@ -22,7 +22,7 @@ begin {
 try {
      "Logging in to Azure..."
      $tenantID = Get-AutomationVariable -Name 'tenantID' 
-     $credentials = Get-AutomationPSCredential -Name 'AzureCredential' $subscriptionID
+     $credentials = Get-AutomationPSCredential -Name 'AzureCredential' 
      add-AzureRmAccount -Credential $credentials -TenantId $tenantID
      $storageAcct = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction Stop
      $storagecontext = ($storageAcct).Context
