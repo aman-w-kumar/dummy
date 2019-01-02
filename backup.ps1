@@ -24,7 +24,7 @@ try {
      $SubId = Get-AutomationVariable -Name 'subID'
      $tenantID = Get-AutomationVariable -Name 'tenantID' 
      $credentials = Get-AutomationPSCredential -Name 'AzureCredential' 
-     add-AzureRmAccount -Credential $myCredential -SubscriptionId $SubId -Tenantid $TenantID 
+     add-AzureRmAccount -Credential $credentials -SubscriptionId $SubId -Tenantid $TenantID 
      $storageAcct = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction Stop
      $storagecontext = ($storageAcct).Context
      $share = Get-AzureStorageShare -Context $storagecontext -Name $filesharename -ErrorAction Stop
