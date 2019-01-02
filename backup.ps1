@@ -14,13 +14,11 @@ begin {
 
         $timestamp = $(get-date -UFormat %Y/%m/%d_%H:%M:%S)
        "---------------------------------------------------------------------------------------------------"
-       "[$timestamp] Function started "
+       "[$timestamp] Script started "
        "---------------------------------------------------------------------------------------------------"
         $ErrorActionPreference = 'Stop'
         $date = get-date
-           
-        #$lastdate = $date.adddays(-7)
-        $lastdate = $date.addhours(-0)
+        $lastdate = $date.addhours(-7)
      
 
 try {
@@ -33,21 +31,15 @@ try {
      $share = Get-AzureStorageShare -Context $storagecontext -Name $filesharename -ErrorAction Stop
      $snapshot = $share.Snapshot()
      $listofsnapshots = Get-AzureStorageShare -Context $storageContext | Where-Object { $_.Name -eq $filesharename -and $_.IsSnapshot -eq $true }
-     ###################count the snapshots age > 7 days #################  should be -lt operator
      $oldsnapshots = @($listofsnapshots | Where-Object { $_.SnapshotTime -lt $lastdate})
      if ($oldsnapshots -ne 'null')
      {
           foreach($oldsnapshot in $oldsnapshots)
           {
-          #$oldsnapshot
-          "----------------------------------------------------------------"
-          $removesnapshots = Remove-AzureStorageShare -Share $oldsnapshot -verbose -WhatIf
-          
-              } 
-       Write-Verbose "snapshot removed $removesnapshots "
-     }
+           Remove-AzureStorageShare -Share $oldsnapshot -verbose -WhatIf
+                        } 
+            }
 } 
-
 catch {
     $ErrorMessage = $_.Exception.Message
     "[$timestamp] [Error] at line $($_.InvocationInfo.ScriptLineNumber): $ErrorMessage" 
@@ -55,7 +47,7 @@ catch {
  }
 end {
          "---------------------------------------------------------------------------------------------------"
-         "[$timestamp] Function Ended "
+         "[$timestamp] script Ended "
          
          "---------------------------------------------------------------------------------------------------"
 }
