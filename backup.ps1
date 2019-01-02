@@ -21,8 +21,8 @@ begin {
         $lastdate = $date.addhours(-7)
 try {
      "Logging in to Azure..."
-     $serviceAccountName = Get-AutomationVariable -Name $myaccountname
-     $credentials = Get-AutomationPSCredential -Name $serviceAccountName
+     $credentials = Get-AutomationVariable -Name 'AzureCredential'
+     
      add-AzureRmAccount -Credential $credentials
     
      $storageAcct = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction Stop
