@@ -1,13 +1,13 @@
-	<#
+<#
 	.Description
 script creates new snapshot and delete old snapshots which age is longer than 7 days.
 #>
 [cmdletbinding()]
 Param(
-    [string] [Parameter(Mandatory=$false,position=0)]$resourceGroupName,
-    [string] [Parameter(Mandatory=$false,position=1)]$automationAccountName,
-    [string] [Parameter(Mandatory=$false,position=2)]$storageAccountName,
-    [string] [Parameter(Mandatory=$false,position=3)]$filesharename
+    [string] [Parameter(Mandatory=$true,position=0)]$resourceGroupName,
+    [string] [Parameter(Mandatory=$true,position=1)]$automationAccountName,
+    [string] [Parameter(Mandatory=$true,position=2)]$storageAccountName,
+    [string] [Parameter(Mandatory=$true,position=3)]$filesharename
         )
 begin {
             ### initialization variables
@@ -18,65 +18,35 @@ begin {
        "---------------------------------------------------------------------------------------------------"
         $ErrorActionPreference = 'Stop'
         $date = get-date
-           
-        $lastdate = $date.adddays(-7)
-       
-       
-
+        $lastdate = $date.addhours(-7)
 try {
-    $servicePrincipalConnection = Get-AutomationConnection -Name 'AzureRunAsConnection'  
-    "Logging in to Azure..."
-    $TenantID = $servicePrincipalConnection.TenantId
-    $ApplicationId = $servicePrincipalConnection.ApplicationId
-    $CertificateThumbprint = $servicePrincipalConnection.CertificateThumbprint
-    $account = add-AzureRmAccount `
-        -ServicePrincipal  `
-        -TenantId $TenantID `
-        -ApplicationId $ApplicationId `
-        -CertificateThumbprint $CertificateThumbprint 
-    
-
-    
-    #Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -verbose 
+     "Logging in to Azure..."
+     $SubId = Get-AutomationVariable -Name 'subID'
+     $tenantID = Get-AutomationVariable -Name 'tenantID' 
+     $credentials = Get-AutomationPSCredential -Name 'AzureCredential' 
+     add-AzureRmAccount -Credential $credentials -SubscriptionId $SubId -Tenantid $TenantID 
      $storageAcct = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction Stop
      $storagecontext = ($storageAcct).Context
      $share = Get-AzureStorageShare -Context $storagecontext -Name $filesharename -ErrorAction Stop
      $snapshot = $share.Snapshot()
-     #$snapshotname = $snapshot.name + $timestamp
-     #Get-AzureStorageFile -Share $snapshot.Name
      $listofsnapshots = Get-AzureStorageShare -Context $storageContext | Where-Object { $_.Name -eq $filesharename -and $_.IsSnapshot -eq $true }
-     $listofsnapshots | Select-Object Name, SnapShotTime,IsSnapshot
-     ###################count the snapshots age > 7 days #################  should be -lt operator
      $oldsnapshots = @($listofsnapshots | Where-Object { $_.SnapshotTime -lt $lastdate})
-     
-     if (!$oldsnapshots)
+     if ($oldsnapshots -ne 'null')
      {
-         "No snapshot found older than 7 days"
-     }
-          else 
+          foreach($oldsnapshot in $oldsnapshots)
           {
-          "removing old snapshots"
-                    foreach($oldsnapshot in $oldsnapshots)
-          {
-                  $oldsnapshot | Select-Object Name, SnapShotTime,IsSnapshot
-                  Remove-AzureStorageShare -Share $oldsnapshot -verbose
-                        } #for each
-           
-     }#else
-} #try
-
+           Remove-AzureStorageShare -Share $oldsnapshot -verbose 
+                        } 
+            }
+} 
 catch {
     $ErrorMessage = $_.Exception.Message
     "[$timestamp] [Error] at line $($_.InvocationInfo.ScriptLineNumber): $ErrorMessage" 
-
- }
- 
- 
 }
+ }
 end {
          "---------------------------------------------------------------------------------------------------"
          $timestamp = $(get-date -UFormat %Y/%m/%d_%H:%M:%S)
-         "[$timestamp] Script Ended "
+	 "[$timestamp] script Ended "
          
-         "---------------------------------------------------------------------------------------------------"
-}
+"---------------------------------------------------------------------------------------------------"
