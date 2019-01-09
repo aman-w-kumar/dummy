@@ -18,8 +18,9 @@ begin {
        "---------------------------------------------------------------------------------------------------"
         $ErrorActionPreference = 'Stop'
         $date = get-date
-        $lastdate = $date.addhours(-7)
-try {
+	[int]$retention = Get-AutomationVariable -Name 'retention'
+        $lastdate = $date.adddays(-$retention)
+  try {
      "Logging in to Azure..."
      $SubId = Get-AutomationVariable -Name 'subID'
      $tenantID = Get-AutomationVariable -Name 'tenantID' 
