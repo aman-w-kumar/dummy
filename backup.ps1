@@ -1,4 +1,4 @@
-<#
+	<#
 	.Description
 script creates new snapshot and delete old snapshots which age is longer than 7 days.
 #>
@@ -18,36 +18,48 @@ begin {
        "---------------------------------------------------------------------------------------------------"
         $ErrorActionPreference = 'Stop'
         $date = get-date
-	[int]$retention = Get-AutomationVariable -Name 'retention'
+        $retention = Get-AutomationVariable -Name 'retention'
         $lastdate = $date.adddays(-$retention)
-  try {
+try {
      "Logging in to Azure..."
      $SubId = Get-AutomationVariable -Name 'subID'
      $tenantID = Get-AutomationVariable -Name 'tenantID' 
      $credentials = Get-AutomationPSCredential -Name 'AzureCredential' 
-     add-AzureRmAccount -Credential $credentials -SubscriptionId $SubId -Tenantid $TenantID 
+     $account = add-AzureRmAccount -Credential $credentials -SubscriptionId $SubId -Tenantid $TenantID 
      $storageAcct = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction Stop
      $storagecontext = ($storageAcct).Context
      $share = Get-AzureStorageShare -Context $storagecontext -Name $filesharename -ErrorAction Stop
      $snapshot = $share.Snapshot()
+
      $listofsnapshots = Get-AzureStorageShare -Context $storageContext | Where-Object { $_.Name -eq $filesharename -and $_.IsSnapshot -eq $true }
+     $listofsnapshots | Select-Object Name, SnapShotTime,IsSnapshot
      $oldsnapshots = @($listofsnapshots | Where-Object { $_.SnapshotTime -lt $lastdate})
-     if ($oldsnapshots -ne 'null')
+     if (!$oldsnapshots)
      {
-          foreach($oldsnapshot in $oldsnapshots)
+         "No snapshot found older than 7 days"
+     }
+          else 
           {
-           Remove-AzureStorageShare -Share $oldsnapshot -verbose 
+          "removing old snapshots"
+                    foreach($oldsnapshot in $oldsnapshots)
+          {
+                  $oldsnapshot | Select-Object Name, SnapShotTime,IsSnapshot
+                  Remove-AzureStorageShare -Share $oldsnapshot -verbose
                         } 
-            }
+           
+     }
 } 
 catch {
     $ErrorMessage = $_.Exception.Message
     "[$timestamp] [Error] at line $($_.InvocationInfo.ScriptLineNumber): $ErrorMessage" 
-}
+
  }
+ 
+ 
+}
 end {
          "---------------------------------------------------------------------------------------------------"
-         $timestamp = $(get-date -UFormat %Y/%m/%d_%H:%M:%S)
-	 "[$timestamp] script Ended "
+         "[$timestamp] Script Ended "
          
-"---------------------------------------------------------------------------------------------------"
+         "---------------------------------------------------------------------------------------------------"
+}
