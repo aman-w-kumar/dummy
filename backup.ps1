@@ -36,7 +36,7 @@ try {
      $oldsnapshots = @($listofsnapshots | Where-Object { $_.SnapshotTime -lt $lastdate})
      if (!$oldsnapshots)
      {
-         "No snapshot found older than 7 days"
+         "No snapshot found older than $retention days"
      }
           else 
           {
